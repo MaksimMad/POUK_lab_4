@@ -59,28 +59,11 @@ class ControlSelector : public rclcpp::Node{
     }
 
     void laserCallback(const sensor_msgs::msg::LaserScan::SharedPtr msg){
-        // проверим нет ли вблизи робота препятствия
-        // const double kMinObstacleDistance = 0.3;
-        // for (size_t i = 0; i<msg->ranges.size(); i++)
-        // {
-        //     if ( msg->ranges[i] < kMinObstacleDistance )
-        //     {
-        //         obstacle = true;
-        //         RCLCPP_WARN(this->get_logger(),"OBSTACLE!!!");
-        //         break;
-        //     }
-        // }
         if ( controlPtr ) // если указатель не нулевой - вызываем функцию текущего алгоритма
             controlPtr->setLaserData(msg->ranges);
     }
 
     void poseCallback(const nav_msgs::msg::Odometry::SharedPtr msg){
-        // RCLCPP_DEBUG(this->get_logger(),
-        //     "Pose msg: x = %f y = %f theta = %f", 
-        //     msg->pose.pose.position.x,
-        //     msg->pose.pose.position.y,
-        //     2*atan2(msg->pose.pose.orientation.z, msg->pose.pose.orientation.w));
-
         // обновляем переменные класса, отвечающие за положение робота
         x = msg->pose.pose.position.x;
         y = msg->pose.pose.position.y;
@@ -90,38 +73,6 @@ class ControlSelector : public rclcpp::Node{
     }
 
     void timerCallback(/*const rclcpp::TimerBase::SharedPtr*/){
-        /*
-        RCLCPP_DEBUG(this->get_logger(), "on timer ");
-        // сообщение с помощью которого задается
-        // управление угловой и линейной скоростью
-        geometry_msgs::msg::Twist cmd;
-        // при создании структура сообщения заполнена нулевыми значениями
-
-        // если вблизи нет препятствия то задаем команды
-        if ( !obstacle )
-        {
-            //  вычислим текущую ошибку управления
-            // double err = cross_track_err_line();
-            double err = cross_track_err_ellipse();
-            // double err = cross_track_err_circle();
-            //  публикация текущей ошибки
-            publish_error(err);
-            //  интегрируем ошибку
-            int_error += err;
-            //  диффференцируем ошибку
-            double diff_error = err - old_error;
-            //   запоминаем значение ошибки для следующего момента времени
-            old_error = err;
-            cmd.linear.x = task_vel;
-            //  ПИД регулятор угловой скорости w = k*err + k_и * инт_err + k_д * дифф_err
-            cmd.angular.z = prop_factor * err + int_factor*int_error + diff_error * diff_factor;
-            
-            RCLCPP_DEBUG(this->get_logger(),"error = %.2f, linear.x=%.2f, w = %.2f ", err, cmd.linear.x, cmd.angular.z);
-        }
-        //  отправляем (публикуем) команду
-        publisher_->publish(cmd);
-        */
-
         geometry_msgs::msg::Twist cmd;
         if ( controlPtr )
         {
@@ -199,18 +150,11 @@ class ControlSelector : public rclcpp::Node{
     Control* controls[nControls];
 
     // публикатор команд управления
-    // ros::Publisher cmd_pub;
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr publisher_;
-    //  публикатор текущей ошибки управления
-    // ros::Publisher err_pub;
-    // rclcpp::Publisher<std_msgs::msg::Float64>::SharedPtr err_pub_;
     // подписчики
-    // ros::Subscriber laser_sub;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr laser_sub_;
-    // ros::Subscriber pose_sub;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr pose_sub_;
     rclcpp::Subscription<std_msgs::msg::UInt16>::SharedPtr selector_sub_;
-    // ros::Timer timer1;
     rclcpp::TimerBase::SharedPtr timer_;
 };
 
@@ -220,11 +164,5 @@ int main(int argc, char * argv[])
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<ControlSelector>());
     rclcpp::shutdown();
-    
-    // сюда мы не попадем, но ради приличия в конце работы удалим динамически выделенную памать
-    // for (std::size_t i = 0; i < nControls; ++i)
-    // {
-    //     delete controls[i];
-    // }
     return 0;
 }

@@ -23,10 +23,6 @@ private:
     double old_error;
     // ошибка
     double err = 0;
-    // double int_err = 0;
-    // double old_err = 0;
-    // минимально допустимое значение расстояния до препятствия
-    // double min_obstacle_range;
 
 public:
     //установка данных лазера

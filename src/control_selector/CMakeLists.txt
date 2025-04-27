@@ -33,7 +33,8 @@ add_executable(control_selector_node
              src/wall_control.h
              src/wall_control.cpp
                                 )
-# add_executable(control_selector_node src/control_selector_node.cpp)
+
+                                
 ament_target_dependencies(control_selector_node rclcpp geometry_msgs sensor_msgs nav_msgs std_msgs)
 
 install(TARGETS control_selector_node
